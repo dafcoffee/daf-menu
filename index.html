@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DAF Coffee | داف كافيه</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* === إعدادات الهوية البصرية === */
+        :root {
+            --daf-primary: #425232;
+            /* الزيتوني الغامق */
+            --daf-accent: #60744B;
+            /* زيتوني أفتح قليلاً */
+            --daf-surface: #FFFFFF;
+            /* سطح البطاقات */
+            --daf-bg: #F8F9F7;
+            /* خلفية الموقع */
+            --daf-text: #2C3325;
+            /* لون النصوص */
+        }
+
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background-color: var(--daf-bg);
+            color: var(--daf-text);
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .product-card {
+            animation: fadeInUp 0.5s ease-out forwards;
+            opacity: 0;
+        }
+
+        .product-card:nth-child(1) {
+            animation-delay: 0.1s;
+        }
+
+        .product-card:nth-child(2) {
+            animation-delay: 0.15s;
+        }
+
+        .product-card:nth-child(3) {
+            animation-delay: 0.2s;
+        }
+
+        .product-card:nth-child(4) {
+            animation-delay: 0.25s;
+        }
+
+        .product-card:nth-child(5) {
+            animation-delay: 0.3s;
+        }
+
+        .category-tab {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .category-tab.active {
+            color: var(--daf-primary);
+            font-weight: 800;
+        }
+
+        .category-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 3px;
+            background-color: var(--daf-primary);
+            border-radius: 10px;
+        }
+
+        .glass-nav {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        /* === Modal Styles === */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(4px);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            background: var(--daf-bg);
+            padding: 2rem;
+            border-radius: 1.5rem;
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+            transform: scale(0.9);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            position: relative;
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: scale(1);
+        }
+
+        /* === Splash Screen Styles === */
+        #splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--daf-primary);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.8s ease-in-out, visibility 0.8s;
+        }
+
+        #splash-screen.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .splash-logo {
+            width: 120px;
+            height: 120px;
+            object-fit: contain;
+            animation: pulse-scale 2s infinite ease-in-out;
+            filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.2));
+            margin-bottom: 20px;
+        }
+
+        .splash-text {
+            color: #fff;
+            font-size: 1.5rem;
+            font-weight: 300;
+            letter-spacing: 2px;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 1s ease-out forwards 0.5s;
+        }
+
+        @keyframes pulse-scale {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes fadeUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body class="pb-24 overflow-hidden">
+    <!-- Splash Screen -->
+    <div id="splash-screen">
+        <div class="relative w-32 h-32 mb-6">
+            <div class="absolute inset-0 bg-white/10 rounded-full blur-xl animate-pulse"></div>
+            <img src="images/logo.png" alt="DAF Logo" class="splash-logo relative z-10 w-full h-full">
+        </div>
+        <h1 class="splash-text">نصنع تجربة متكاملة</h1>
+        <div class="mt-8 flex gap-2">
+            <div class="w-2 h-2 bg-white/50 rounded-full animate-bounce" style="animation-delay: 0s"></div>
+            <div class="w-2 h-2 bg-white/50 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
+            <div class="w-2 h-2 bg-white/50 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+        </div>
+    </div>
+
+    <header class="glass-nav sticky top-0 z-50 border-b border-gray-100/50 shadow-sm transition-all duration-300">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 relative">
+                        <img src="images/logo.png" alt="DAF" class="w-full h-full object-contain drop-shadow-sm">
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-xs text-gray-500 font-medium">مرحباً بك في</span>
+                        <span class="text-xl font-bold text-[#425232] leading-none tracking-tight">DAF COFFEE</span>
+                    </div>
+                </div>
+
+                <div class="flex gap-3 items-center">
+                    <button onclick="openModal()"
+                        class="text-[#425232] text-sm font-bold border border-[#425232] rounded-full px-4 py-1.5 hover:bg-[#425232] hover:text-white transition-all ml-2">
+                        نبذة عنا
+                    </button>
+                    <a href="https://www.instagram.com/dafcoffeesa?igsh=eXh2d3dmbGg2b216" target="_blank"
+                        class="text-[#425232] hover:text-[#60744B] transition-colors">
+                        <i class="fab fa-instagram text-2xl"></i>
+                    </a>
+                    <a href="https://www.tiktok.com/@dafcoffeesa?is_from_webapp=1&sender_device=pc" target="_blank"
+                        class="text-[#425232] hover:text-[#60744B] transition-colors">
+                        <i class="fab fa-tiktok text-xl"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="mt-4 relative group">
+                <input type="text" id="search-input" placeholder="ابحث عن قهوتك المفضلة..."
+                    class="w-full bg-[#F3F4F1] border-none rounded-xl py-3 px-10 text-sm text-[#425232] placeholder-gray-400 focus:ring-2 focus:ring-[#425232]/20 transition-all">
+                <span class="absolute right-3 top-3 text-gray-400 group-focus-within:text-[#425232] transition-colors">
+                    <i class="fas fa-search"></i>
+                </span>
+            </div>
+        </div>
+
+        <div class="w-full border-t border-gray-100 overflow-x-auto hide-scrollbar bg-white/80">
+            <div class="container mx-auto px-4 flex items-center gap-6 h-12 min-w-max" id="categories-container">
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-6">
+        <div class="flex items-center justify-between mb-5">
+            <h2 id="section-title" class="text-xl font-bold text-[#425232]">جميع المنتجات</h2>
+            <span class="text-xs text-gray-400 bg-white px-2 py-1 rounded-md border border-gray-100 shadow-sm"
+                id="items-count">0 صنف</span>
+        </div>
+
+        <div id="menu-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        </div>
+    </main>
+
+    <!-- About Us Modal -->
+    <div id="aboutModal" class="modal-overlay" onclick="closeModal(event)">
+        <div class="modal-content relative" onclick="event.stopPropagation()">
+            <button onclick="closeModal()"
+                class="absolute top-4 right-4 w-8 h-8 rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors flex items-center justify-center">
+                <i class="fas fa-times"></i>
+            </button>
+
+            <div
+                class="w-16 h-16 bg-[#F3F4F1] rounded-full flex items-center justify-center mx-auto mb-4 text-[#425232]">
+                <i class="fas fa-coffee text-2xl"></i>
+            </div>
+
+            <h3 class="text-2xl font-bold text-[#425232] mb-3">عن داف كافيه</h3>
+            <p class="text-gray-600 leading-relaxed text-sm mb-6">
+                في داف كافيه، لا نقدم مجرد كوب قهوة، بل نصنع تجربة متكاملة. من قلب السعودية، نأتيكم بأجود أنواع البن
+                المختص المحمص بعناية فائقة.
+                <br><br>
+                هدفنا هو تقديم الجودة العالية بأسلوب بسيط يعكس هدوء ورقي المكان.
+            </p>
+
+            <button onclick="closeModal()"
+                class="w-full bg-[#425232] text-white font-bold py-3 rounded-xl hover:bg-[#2C3325] transition-colors shadow-lg shadow-[#425232]/20">
+                إغلاق
+            </button>
+        </div>
+    </div>
+
+    <div class="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-40 w-[90%] max-w-md">
+        <div
+            class="bg-[#425232] text-white rounded-full shadow-2xl py-3 px-6 flex justify-between items-center backdrop-blur-md bg-opacity-95">
+            <div class="flex items-center gap-2">
+                <i class="fas fa-map-marker-alt text-[#A3B197]"></i>
+                <span class="text-sm font-medium">تبوك، السعودية</span>
+            </div>
+            <div class="h-4 w-[1px] bg-white/20"></div>
+            <a href="https://www.instagram.com/dafcoffeesa?igsh=eXh2d3dmbGg2b216"
+                class="text-sm font-bold flex items-center gap-2 hover:opacity-80 transition-opacity">
+                <span>تابعنا</span>
+                <i class="fas fa-arrow-left text-xs mt-1"></i>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        const products = [
+            // --- الفطور ---
+            { id: 1, name: "ساندوتش بوراتا", price: 27, category: "الفطور", image: "images/burrata.jpg", desc: "مع الطماطم المجففة والجرجير" },
+            { id: 2, name: "ساندوتش تركي", price: 28, category: "الفطور", image: "images/turkey.jpg", desc: "تركي مدخن، جبنة، خس" },
+            { id: 3, name: "سبايسي تونا", price: 28, category: "الفطور", image: "images/tuna.jpg", desc: "خلطة التونا الحارة الخاصة" },
+            { id: 4, name: "بينت باتر & جلي", price: 14, category: "الفطور", image: "images/pb-jelly.jpg", desc: "كلاسيك وتوست محمص" },
+
+            // --- الحلا ---
+            { id: 5, name: "سوفليه", price: 24, category: "الحلا", image: "images/souffle.jpg", desc: "يقدم ساخناً" },
+            { id: 6, name: "تراميسو", price: 24, category: "الحلا", image: "images/tiramisu.jpg", desc: "على الطريقة الإيطالية" },
+            { id: 7, name: "فرنش توست", price: 25, category: "الحلا", image: "images/french-toast.jpg", desc: "بريوش، كراميل، فواكه" },
+            { id: 8, name: "كوكيز", price: 10, category: "الحلا", image: "images/cookies.jpg", desc: "شوكولاتة بلجيكية" },
+            { id: 9, name: "سان سباستيان", price: 24, category: "الحلا", image: "images/san-sebastian.jpg", desc: "مع صوص الشوكولاتة" },
+            { id: 10, name: "كيكة ماتيلدا", price: 27, category: "الحلا", image: "images/matilda.jpg", desc: "غنية بالشوكولاتة" },
+            { id: 11, name: "انجليش كيك", price: 10, category: "الحلا", image: "images/english-cake.jpg", desc: "" },
+
+            // --- القهوة الحارة ---
+            { id: 12, name: "ماتشا (حار)", price: 21, category: "القهوه الحاره", image: "images/matcha-hot.jpg", desc: "شاي أخضر ياباني فاخر" },
+            { id: 13, name: "إسبريسو", price: 12, category: "القهوه الحاره", image: "images/espresso.jpg", desc: "" },
+            { id: 14, name: "أمريكانو", price: 12, category: "القهوه الحاره", image: "images/americano.jpg", desc: "" },
+            { id: 15, name: "كابتشينو", price: 16, category: "القهوه الحاره", image: "images/cappuccino.jpg", desc: "" },
+            { id: 16, name: "لاتيه", price: 16, category: "القهوه الحاره", image: "images/latte.jpg", desc: "" },
+            { id: 17, name: "فلات وايت", price: 15, category: "القهوه الحاره", image: "images/flatwhite.jpg", desc: "" },
+            { id: 18, name: "كورتادو", price: 13, category: "القهوه الحاره", image: "images/cortado.jpg", desc: "" },
+            { id: 19, name: "مكياتو", price: 14, category: "القهوه الحاره", image: "images/macchiato.jpg", desc: "" },
+            { id: 20, name: "سبانش لاتيه", price: 19, category: "القهوه الحاره", image: "images/spanish-latte.jpg", desc: "حليب مكثف محلى" },
+
+            // --- القهوة المثلجة ---
+            { id: 21, name: "ايسد ماتشا", price: 24, category: "القهوه المثلجة", image: "images/matcha-iced.jpg", desc: "" },
+            { id: 22, name: "ايسد امريكانو", price: 13, category: "القهوه المثلجة", image: "images/americano-iced.jpg", desc: "" },
+            { id: 23, name: "ايس لاتيه", price: 18, category: "القهوه المثلجة", image: "images/latte-iced.jpg", desc: "" },
+            { id: 24, name: "ايس فلات وايت", price: 15, category: "القهوه المثلجة", image: "images/flatwhite-iced.jpg", desc: "" },
+            { id: 25, name: "ايسد سبانش لاتيه", price: 19, category: "القهوه المثلجة", image: "images/spanish-iced.jpg", desc: "" },
+            { id: 26, name: "الفريدو", price: 12, category: "القهوه المثلجة", image: "images/freddo.jpg", desc: "إسبريسو مثلج مخفوق" },
+
+            // --- القهوة السوداء ---
+            { id: 27, name: "V60 حار", price: 18, category: "القهوه السوداء", image: "images/v60-hot.jpg", desc: "تقطير يدوي" },
+            { id: 28, name: "ايس V60", price: 19, category: "القهوه السوداء", image: "images/v60-iced.jpg", desc: "" },
+            { id: 29, name: "قهوة اليوم حاره", price: 8, category: "القهوه السوداء", image: "images/daily-hot.jpg", desc: "" },
+            { id: 30, name: "قهوة اليوم بارده", price: 9, category: "القهوه السوداء", image: "images/daily-iced.jpg", desc: "" },
+            { id: 31, name: "كولد برو", price: 25, category: "القهوه السوداء", image: "images/cold-brew.jpg", desc: "منقوعة 24 ساعة" },
+        ];
+
+        const categories = ["الكل", ...new Set(products.map(p => p.category))];
+        let currentCategory = "الكل";
+
+        function renderCategories() {
+            const container = document.getElementById('categories-container');
+            container.innerHTML = categories.map(cat => `
+                <button 
+                    onclick="filterMenu('${cat}')"
+                    class="category-tab text-sm font-medium text-gray-500 whitespace-nowrap hover:text-[#425232] px-2 ${currentCategory === cat ? 'active' : ''}"
+                >
+                    ${cat}
+                </button>
+            `).join('');
+        }
+
+        function renderProducts(items) {
+            const grid = document.getElementById('menu-grid');
+            const countLabel = document.getElementById('items-count');
+
+            countLabel.innerText = `${items.length} صنف`;
+
+            if (items.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full flex flex-col items-center justify-center py-20 opacity-50">
+                        <div class="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mb-4 text-2xl text-gray-400">☕</div>
+                        <p class="text-gray-500">لا توجد نتائج</p>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = items.map(item => `
+                <div class="product-card bg-white rounded-2xl overflow-hidden shadow-[0_2px_10px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_30px_rgba(66,82,50,0.12)] transition-all duration-300 group border border-gray-50">
+                    <div class="relative h-48 overflow-hidden bg-[#F8F8F6]">
+                        <img 
+                            src="${item.image}" 
+                            alt="${item.name}" 
+                            class="w-full h-full object-contain p-2 transform group-hover:scale-105 transition-transform duration-700"
+                            onerror="this.onerror=null; this.src='https://placehold.co/400x300/F0F2EF/425232?text=DAF';"
+                        >
+                        <div class="absolute bottom-3 left-3 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-lg shadow-sm border border-gray-100">
+                            <span class="text-[#425232] font-bold text-sm">${item.price} ريال</span>
+                        </div>
+                    </div>
+                    
+                    <div class="p-4">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="font-bold text-[#2C3325] text-lg mb-1 group-hover:text-[#425232] transition-colors">${item.name}</h3>
+                                ${item.desc ? `<p class="text-xs text-gray-400 line-clamp-2 leading-relaxed">${item.desc}</p>` : '<p class="text-xs text-gray-300">طعم أصيل وفاخر</p>'}
+                            </div>
+                            
+                            <button class="w-8 h-8 rounded-full bg-[#F3F4F1] flex items-center justify-center text-[#425232] hover:bg-[#425232] hover:text-white transition-all shadow-sm">
+                                <i class="fas fa-plus text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterMenu(category) {
+            currentCategory = category;
+            document.getElementById('section-title').innerText = category === "الكل" ? "جميع المنتجات" : category;
+            renderCategories();
+
+            const grid = document.getElementById('menu-grid');
+            grid.innerHTML = '';
+
+            setTimeout(() => {
+                if (category === "الكل") {
+                    renderProducts(products);
+                } else {
+                    renderProducts(products.filter(p => p.category === category));
+                }
+            }, 50);
+        }
+
+        document.getElementById('search-input').addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const filtered = products.filter(p => p.name.toLowerCase().includes(term));
+
+            document.getElementById('section-title').innerText = term ? "نتائج البحث" : "جميع المنتجات";
+            renderProducts(filtered);
+
+            currentCategory = "الكل";
+            renderCategories();
+        });
+
+        // Modal Functions
+        function openModal() {
+            document.getElementById('aboutModal').classList.add('active');
+            document.body.style.overflow = 'hidden'; // Prevent scrolling
+        }
+
+        function closeModal(event) {
+            document.getElementById('aboutModal').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        renderCategories();
+        renderProducts(products);
+
+        // Splash Screen Logic
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const splash = document.getElementById('splash-screen');
+                splash.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+            }, 2500); // Show splash for 2.5 seconds
+        });
+    </script>
+</body>
+
+</html>
